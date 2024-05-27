@@ -1,9 +1,5 @@
 from fastapi import FastAPI
-from router import index as router_index
-#from database import engine, Base
-
-# Crear todas las tablas en la base de datos (solo para desarrollo)
-#Base.metadata.create_all(bind=engine)
+from app.router import index as router_index
 
 app = FastAPI()
 
