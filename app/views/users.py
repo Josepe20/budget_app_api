@@ -47,7 +47,7 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_se
     db_user = user_models.User(
         username=user.username,
         email=user.email,
-        hashed_password=hashed_password,
+        password=hashed_password,
         is_active=True,
         is_verified=False
     )
