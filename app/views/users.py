@@ -34,8 +34,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    access_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    refresh_token = jwt.encode({"sub": data["sub"]}, SECRET_KEY, algorithm=ALGORITHM)
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/register", response_model=user_schemas.UserResponse)
 def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_session)):
@@ -54,32 +55,47 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_se
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    send_account_activation_email(user.email, email_token)
+    send_account_activation_email(user.email, db_user.id)
     return db_user
 
 @router.post("/login")
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db_session)):
     user = db.query(user_models.User).filter(user_models.User.username == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_verified:
         raise HTTPException(status_code=400, detail="Account not verified")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
-    return {"access_token": access_token, "token_type": "bearer"}
+    tokens = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+    return {"access_token": tokens["access_token"], "refresh_token": tokens["refresh_token"], "token_type": "bearer"}
 
-@router.post("/logout")
-def logout_user():
-    # In FastAPI, logout is typically handled on the client side by removing the token
-    return {"message": "Successfully logged out"}
 
-@router.get("/activate/{email_token}")
-def activate_account(email_token: str, db: Session = Depends(get_db_session)):
-    user = db.query(user_models.User).filter(user_models.User.email_token == email_token).first()
+@router.post("/refresh")
+def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        user = db.query(user_models.User).filter(user_models.User.username == username).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        new_access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+        return {"access_token": new_access_token["access_token"], "token_type": "bearer"}
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    
+
+@router.get("/activate/{user_id}")
+def activate_account(user_id: int, db: Session = Depends(get_db_session)):
+    print("before user filter")
+    print("user id: ", user_id)
+    user = db.query(user_models.User).filter(user_models.User.id == user_id).first()
+    print("user: ", user)
     if not user:
-        raise HTTPException(status_code=400, detail="Invalid email token")
+        raise HTTPException(status_code=400, detail="Invalid user ID")
     user.is_verified = True
     db.commit()
+    print("changes updated")
     return {"message": "Account successfully activated"}
 
 
