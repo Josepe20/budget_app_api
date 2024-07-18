@@ -31,9 +31,9 @@ def verify_password(plain_password, hashed_password):
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(datetime.UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(datetime.UTC) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     access_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     refresh_token = jwt.encode({"sub": data["sub"]}, SECRET_KEY, algorithm=ALGORITHM)
@@ -67,7 +67,8 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     if not user.is_verified:
         raise HTTPException(status_code=400, detail="Account not verified")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    tokens = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+    sub_contennt = f"{user.id}-{user.username}"
+    tokens = create_access_token(data={"sub": sub_contennt}, expires_delta=access_token_expires)
 
     data_response = {
         "access_token": tokens["access_token"], 
@@ -76,25 +77,30 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
         }
     return standard_response(status.HTTP_200_OK, "Login successful", data_response)
 
-
 @router.post("/refresh")
 def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
     try:
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        user = db.query(user_models.User).filter(user_models.User.username == username).first()
+        sub_content = payload.get("sub")
+        if not sub_content:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+        id_user, username = sub_content.split("-")
+        user = db.query(user_models.User).filter(user_models.User.id == id_user, user_models.User.username == username).first()
         if not user:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
+
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        new_access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+        new_access_token = create_access_token(data={"sub": sub_content}, expires_delta=access_token_expires)
 
         data_response = {
             "access_token": new_access_token["access_token"], 
             "token_type": "bearer"
-            }
+        }
         return standard_response(status.HTTP_200_OK, "Token refreshed successfully", data_response)
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+
     
 
 @router.get("/activate/{user_id}")
