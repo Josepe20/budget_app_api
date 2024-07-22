@@ -6,7 +6,7 @@ from app.models import users as user_models
 from app.dependencies import get_db_session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 from app.functions.emails import send_account_activation_email
 from app.functions.api_response import standard_response
@@ -31,9 +31,9 @@ def verify_password(plain_password, hashed_password):
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(datetime.UTC) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(datetime.UTC) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     access_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     refresh_token = jwt.encode({"sub": data["sub"]}, SECRET_KEY, algorithm=ALGORITHM)
