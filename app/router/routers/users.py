@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.views import users as user_views
 from app.schemas import users as user_schemas
 from sqlalchemy.orm import Session
@@ -23,6 +23,13 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 def logout_user():
     return user_views.logout_user()
 
-@router.get("/activate/{email_token}")
-def activate_account(email_token: str, db: Session = Depends(get_db_session)):
-    return user_views.activate_account(email_token, db)
+@router.post("/refresh")
+def refresh_token(data: dict, db: Session = Depends(get_db_session)):
+    refresh_token = data.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=400, detail="Refresh token is missing")
+    return user_views.refresh_token(refresh_token, db)
+
+@router.get("/activate/{user_id}")
+def activate_account(user_id: int, db: Session = Depends(get_db_session)):
+    return user_views.activate_account(user_id, db)
