@@ -56,7 +56,7 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_se
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    # send_account_activation_email(user.email, db_user.id)
+    # send_account_activation_email(user.email, db_user.user_id)
     return standard_response(status.HTTP_201_CREATED, "User registered successfully", db_user)
 
 @router.post("/login")
@@ -67,7 +67,7 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     if not user.is_verified:
         raise HTTPException(status_code=400, detail="Account not verified")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    sub_contennt = f"{user.id}-{user.username}"
+    sub_contennt = f"{user.user_id}-{user.username}"
     tokens = create_access_token(data={"sub": sub_contennt}, expires_delta=access_token_expires)
 
     data_response = {
@@ -85,8 +85,8 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
         if not sub_content:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-        id_user, username = sub_content.split("-")
-        user = db.query(user_models.User).filter(user_models.User.id == id_user, user_models.User.username == username).first()
+        id_user_token, username_token = sub_content.split("-")
+        user = db.query(user_models.User).filter(user_models.User.user_id == id_user_token, user_models.User.username == username_token).first()
         if not user:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
@@ -105,7 +105,7 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
 
 @router.get("/activate/{user_id}")
 def activate_account(user_id: int, db: Session = Depends(get_db_session)):
-    user = db.query(user_models.User).filter(user_models.User.id == user_id).first()
+    user = db.query(user_models.User).filter(user_models.User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user ID")
     user.is_verified = True
