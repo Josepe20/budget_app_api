@@ -4,7 +4,6 @@ from app.main import app
 from app.dependencies import get_db_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.users import users as user_models
 from app.database import Base
 from decouple import config
 
