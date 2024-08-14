@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.schemas import users as user_schemas
 from app.schemas import general as general_schemas 
-from app.models import users as user_models
+from models.users import users as user_models
 from app.dependencies import get_db_session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
