@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.views import users as user_views
+from views.users import users_view as user_views
 from app.schemas import users as user_schemas
-from app.schemas import general as general_schemas
+from schemas import general_schema as general_schemas
 from sqlalchemy.orm import Session
 from app.dependencies import get_db_session
 from fastapi.security import OAuth2PasswordRequestForm

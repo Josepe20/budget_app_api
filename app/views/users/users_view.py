@@ -1,14 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.schemas import users as user_schemas
-from app.schemas import general as general_schemas 
+from app.schemas.users import users_schema as  user_schemas
 from app.models.users import users as user_models
 from app.dependencies import get_db_session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
-import uuid
 from app.functions.emails import send_account_activation_email
 from app.functions.api_response import standard_response
 from typing import Optional
@@ -56,7 +54,7 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_se
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    # send_account_activation_email(user.email, db_user.user_id)
+    
     return standard_response(status.HTTP_201_CREATED, "User registered successfully", db_user)
 
 @router.post("/login")
