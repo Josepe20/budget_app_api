@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db_session
 from app.schemas.budget.budget_schema import BudgetCreate, BudgetResponse
 from app.views.budget import budget_view
-from router.budget.routes import incomes_router, expenses_router
+from app.router.budget.routes import incomes_router, expenses_router
 
 
 router = APIRouter()
