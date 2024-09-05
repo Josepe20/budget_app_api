@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.dependencies import get_db_session
 from sqlalchemy import create_engine
+from app.models.users.users import User
 from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from decouple import config
@@ -39,29 +40,49 @@ def test_user():
         "password": "123"
     }
 
+
+def clear_user_in_db():
+    db = TestingSessionLocal()
+    db.query(User).filter(User.username == test_user["username"]).delete()
+    db.commit()
+    db.close()
+
+
 def test_register_user(test_user):
-    response = client.post("/users/register", json=test_user)
-    if response.status_code == 200 or response.status_code == 201:
-        assert response.status_code == 200 or response.status_code == 201
+
+    try:
+        # Primer intento: el usuario debería registrarse correctamente
+        response = client.post("/users/register", json=test_user)
+        assert response.status_code == 201
         assert response.json()["message"] == "User registered successfully"
-    elif response.status_code == 400:
-        assert response.status_code == 400
-        assert response.json()["detail"] == "Email already registered"
-    else:
-        pytest.fail(f"Unexpected status code: {response.status_code}")
+    except AssertionError:
+        # Si el usuario ya existe, se captura el error esperado
+        assert response.status_code == 200
+        assert response.json()["message"] == "Email already registered"
+    
+    # Intentar de nuevo para asegurarse de que en el segundo intento ya existe el email
+    response = client.post("/users/register", json=test_user)
+    assert response.status_code == 200
+    assert response.json()["message"] == "Email already registered"
+
 
 def test_login_user(test_user):
+    # Aseguramos que el usuario ya está registrado
     client.post("/users/register", json=test_user)
+
+     # Intentamos hacer login con el usuario registrado
     response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})
     assert response.status_code == 200
     assert response.json()["message"] == "Login successful"
     assert "access_token" in response.json()["data"]
 
 def test_refresh_token(test_user):
+     # Registramos al usuario y obtenemos el token de acceso y de refresco
     client.post("/users/register", json=test_user)
     login_response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})
     refresh_token = login_response.json()["data"]["refresh_token"]
 
+    # Intentamos refrescar el token
     refresh_response = client.post("/users/refresh", json={"refresh_token": refresh_token})
     assert refresh_response.status_code == 200
     assert refresh_response.json()["message"] == "Token refreshed successfully"

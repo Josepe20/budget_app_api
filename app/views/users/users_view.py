@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.schemas.users import users_schema as  user_schemas
+from app.repositories.users.users_repository import UserRepository
 from app.models.users import users as user_models
 from app.dependencies import get_db_session
 from passlib.context import CryptContext
@@ -43,10 +44,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_session)):
-    db_user = db.query(user_models.User).filter(user_models.User.email == user.email).first()
+    user_repository = UserRepository(db)
 
+    db_user = user_repository.get_user_by_email(user.email)
     if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        return db_user, False
     
     hashed_password = get_password_hash(user.password)
     new_user = user_models.User(
@@ -56,16 +58,15 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_se
         is_active=True,
         is_verified=True
     )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    return new_user
+    created_user = user_repository.create_user(new_user)
+
+    return created_user, True
 
 
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db_session)):
-    user = db.query(user_models.User).filter(user_models.User.username == form_data.username).first()
+    user_repository = UserRepository(db)
 
+    user = user_repository.get_user_by_username(form_data.username)
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_verified:
@@ -84,6 +85,7 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 
 def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
     try:
+        user_repository = UserRepository(db)
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         sub_content = payload.get("sub")
 
@@ -91,10 +93,10 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
         id_user_token, username_token = sub_content.split("-")
-        user = db.query(user_models.User).filter(user_models.User.user_id == id_user_token, user_models.User.username == username_token).first()
-
+        print(username_token)
+        user = user_repository.get_user_by_id(id_user_token)
         if not user:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            raise HTTPException(status_code=404, detail="User not found")
 
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         new_access_token = create_access_token(data={"sub": sub_content}, expires_delta=access_token_expires)
@@ -103,14 +105,18 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
             "access_token": new_access_token["access_token"],
             "token_type": "bearer"
         }
-    except JWTError:
+    except JWTError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Server error")
 
     
 def activate_account(user_id: int, db: Session = Depends(get_db_session)):
-    user = db.query(user_models.User).filter(user_models.User.user_id == user_id).first()
+    user_repository = UserRepository(db)
+
+    user = user_repository.get_user_by_id(user_id)
     if not user:
-        raise HTTPException(status_code=400, detail="Invalid user ID")
+        raise HTTPException(status_code=404, detail="User not found")
     user.is_verified = True
-    db.commit()
+    user_repository.update_user(user)
     return "Account successfully activated"

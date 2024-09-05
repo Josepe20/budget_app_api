@@ -15,8 +15,12 @@ def user_home():
 @router.post("/register")
 def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_session)):
     try: 
-        user_registered = user_views.register_user(user, db)
-        return standard_response(status.HTTP_201_CREATED, "User registered successfully", user_registered)
+        user_registered, is_new = user_views.register_user(user, db)
+        
+        if not is_new:
+            return standard_response(status.HTTP_200_OK, "Email already registered", user_registered)
+
+        return standard_response(status.HTTP_201_CREATED, "User registered successfully", user_registered)      
     except HTTPException as e:
         print("HTTPException: ", e)
         return standard_response(status=e.status_code, message=str(e.detail))
