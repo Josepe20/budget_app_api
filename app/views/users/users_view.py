@@ -1,14 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.schemas import users as user_schemas
-from app.schemas import general as general_schemas 
+from app.schemas.users import users_schema as  user_schemas
+from app.repositories.users.users_repository import UserRepository
 from app.models.users import users as user_models
 from app.dependencies import get_db_session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
-import uuid
 from app.functions.emails import send_account_activation_email
 from app.functions.api_response import standard_response
 from typing import Optional
@@ -38,78 +37,86 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     access_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     refresh_token = jwt.encode({"sub": data["sub"]}, SECRET_KEY, algorithm=ALGORITHM)
-    return {"access_token": access_token, "refresh_token": refresh_token}
+    return {
+        "access_token": access_token, 
+        "refresh_token": refresh_token
+    }
 
-@router.post("/register")
+
 def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_session)):
-    db_user = db.query(user_models.User).filter(user_models.User.email == user.email).first()
+    user_repository = UserRepository(db)
+
+    db_user = user_repository.get_user_by_email(user.email)
     if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        return db_user, False
+    
     hashed_password = get_password_hash(user.password)
-    db_user = user_models.User(
+    new_user = user_models.User(
         username=user.username,
         email=user.email,
         password=hashed_password,
         is_active=True,
         is_verified=True
     )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    # send_account_activation_email(user.email, db_user.user_id)
-    return standard_response(status.HTTP_201_CREATED, "User registered successfully", db_user)
+    created_user = user_repository.create_user(new_user)
 
-@router.post("/login")
+    return created_user, True
+
+
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db_session)):
-    user = db.query(user_models.User).filter(user_models.User.username == form_data.username).first()
+    user_repository = UserRepository(db)
+
+    user = user_repository.get_user_by_username(form_data.username)
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_verified:
         raise HTTPException(status_code=400, detail="Account not verified")
+    
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     sub_contennt = f"{user.user_id}-{user.username}"
     tokens = create_access_token(data={"sub": sub_contennt}, expires_delta=access_token_expires)
 
-    data_response = {
+    return {
         "access_token": tokens["access_token"], 
         "refresh_token": tokens["refresh_token"], 
         "token_type": "bearer"
-        }
-    return standard_response(status.HTTP_200_OK, "Login successful", data_response)
+    }
 
-@router.post("/refresh")
+
 def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
     try:
+        user_repository = UserRepository(db)
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         sub_content = payload.get("sub")
+
         if not sub_content:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
         id_user_token, username_token = sub_content.split("-")
-        user = db.query(user_models.User).filter(user_models.User.user_id == id_user_token, user_models.User.username == username_token).first()
+        print(username_token)
+        user = user_repository.get_user_by_id(id_user_token)
         if not user:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            raise HTTPException(status_code=404, detail="User not found")
 
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         new_access_token = create_access_token(data={"sub": sub_content}, expires_delta=access_token_expires)
-
-        data_response = {
-            "access_token": new_access_token["access_token"], 
+        
+        return {
+            "access_token": new_access_token["access_token"],
             "token_type": "bearer"
         }
-        return standard_response(status.HTTP_200_OK, "Token refreshed successfully", data_response)
-    except JWTError:
+    except JWTError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Server error")
 
     
-
-@router.get("/activate/{user_id}")
 def activate_account(user_id: int, db: Session = Depends(get_db_session)):
-    user = db.query(user_models.User).filter(user_models.User.user_id == user_id).first()
+    user_repository = UserRepository(db)
+
+    user = user_repository.get_user_by_id(user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user ID")
+        raise HTTPException(status_code=404, detail="User not found")
     user.is_verified = True
-    db.commit()
-    return standard_response(status.HTTP_200_OK, "Account successfully activated")
-
-
+    user_repository.update_user(user)
+    return "Account successfully activated"

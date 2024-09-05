@@ -15,4 +15,5 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
-
+    # One-to-Many relationship with Budget
+    budgets = relationship("Budget", back_populates="user")
