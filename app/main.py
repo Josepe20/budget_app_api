@@ -22,7 +22,7 @@ app.add_middleware(
 
 # Register middleware
 app.add_middleware(LoggingMiddleware)
-app.add_middleware(AuthMiddleware)
+## app.add_middleware(AuthMiddleware)
 
 
 # Incluir el router principal

@@ -13,6 +13,6 @@ class Budget(Base):
     total_expense = Column(Float, default=0)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
-    # Relación opcional con la tabla de usuarios
+    # Many-to-One relationship with Budget
     user = relationship("User", back_populates="budgets")
     
