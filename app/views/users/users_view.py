@@ -8,8 +8,6 @@ from app.dependencies import get_db_session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
-from app.functions.emails import send_account_activation_email
-from app.functions.api_response import standard_response
 from typing import Optional
 from decouple import config
 

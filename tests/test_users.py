@@ -49,7 +49,6 @@ def clear_user_in_db():
 
 
 def test_register_user(test_user):
-
     try:
         # Primer intento: el usuario debería registrarse correctamente
         response = client.post("/users/register", json=test_user)
@@ -75,6 +74,7 @@ def test_login_user(test_user):
     assert response.status_code == 200
     assert response.json()["message"] == "Login successful"
     assert "access_token" in response.json()["data"]
+    
 
 def test_refresh_token(test_user):
      # Registramos al usuario y obtenemos el token de acceso y de refresco
