@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from app.router import index as router_index
 from fastapi.middleware.cors import CORSMiddleware
+from app.middleware.logging_middleware import LoggingMiddleware
+from app.middleware.auth_middleware import AuthMiddleware
 
 app = FastAPI()
 
@@ -17,6 +19,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register middleware
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(AuthMiddleware)
 
 
 # Incluir el router principal
