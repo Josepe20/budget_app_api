@@ -4,6 +4,7 @@ from app.schemas.budget.budget_schema import BudgetCreate, BudgetResponse
 from app.repositories.budget.budget_repository import BudgetRepository
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
+from app.functions.validate_active_month import validate_active_month
 
 
 def get_all_budgets(db: Session):
@@ -32,7 +33,6 @@ def get_budget_by_id(budget_id: int, db: Session):
 
 def create_budget(budget: BudgetCreate, db: Session):
     budget_repository = BudgetRepository(db)
-
     current_month = datetime.now().month
     current_year = datetime.now().year
 
@@ -46,17 +46,9 @@ def create_budget(budget: BudgetCreate, db: Session):
         total_expense=budget.total_expense,
         created_at=datetime.now(timezone.utc)
     )
-    new_budget_month = new_budget.created_at.month
-    new_budget_year = new_budget.created_at.year
-
-    # Block budget creation for past or future months
-    if new_budget_month != current_month or new_budget_year != current_year:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You can only create a budget for the current active month."
-        )
+    
+    validate_active_month(new_budget.created_at)
 
     created_budget = budget_repository.create_budget(new_budget)
-
     return created_budget, True
 
