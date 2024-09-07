@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import extract
 from app.models.budget.incomes import Incomes
+from app.models.budget.budget import Budget
 
 
 class IncomeRepository:
@@ -32,11 +34,11 @@ class IncomeRepository:
         return self.db.query(Incomes).filter(Incomes.income_id == income_id).first()
 
     def get_user_incomes(self, user_id: int):
-        return self.db.query(Incomes).join(Incomes.budget).filter(Incomes.budget.user_id == user_id).all()
+        return self.db.query(Incomes).join(Budget).filter(Budget.user_id == user_id).all()
 
     def get_user_active_incomes(self, user_id: int, current_month: int, current_year: int):
-        return self.db.query(Incomes).join(Incomes.budget).filter(
-            Incomes.budget.user_id == user_id,
-            Incomes.budget.created_at.month == current_month,
-            Incomes.budget.created_at.year == current_year
+        return self.db.query(Incomes).join(Budget).filter(
+            Budget.user_id == user_id,
+            extract('month', Budget.created_at) == current_month,
+            extract('year', Budget.created_at) == current_year
         ).all()

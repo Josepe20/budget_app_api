@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.dependencies import get_db_session
 from app.functions.api_response import standard_response
-from app.schemas.budget.income_schema import IncomeCreate, IncomeResponse
+from app.schemas.budget.income_schema import IncomeCreate 
 from app.views.budget import incomes_view
 
 router = APIRouter()
@@ -15,9 +15,9 @@ def create_income(income: IncomeCreate, db: Session = Depends(get_db_session)):
 
 
 @router.put("/update/{income_id}")
-def update_income(income_id: int, db: Session = Depends(get_db_session)):
-    updated_income = incomes_view.update_income(income_id, db)
-    return standard_response(status.HTTP_200_OK, "income updated succesfully", updated_income)
+def update_income(income_id: int, income: IncomeCreate, db: Session = Depends(get_db_session)):
+    updated_income = incomes_view.update_income(income_id, income.model_dump(), db)
+    return standard_response(status.HTTP_200_OK, "income updated successfully", updated_income)
     
 
 @router.delete("/delete/{income_id}")

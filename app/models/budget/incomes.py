@@ -13,5 +13,5 @@ class Incomes(Base):
     income_name = Column(String(100), default=None)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
-    # Relación opcional con la tabla Budget
+    # Many-to-One relationship with Budget
     budget = relationship("Budget", back_populates="incomes")
