@@ -27,7 +27,7 @@ def get_budget_by_id(budget_id: int, db: Session = Depends(get_db_session)):
     return standard_response(status.HTTP_200_OK, "Budget found", budget_found)
     
 
-@router.post("/create-budget")
+@router.post("/create")
 def create_budget(budget: BudgetCreate, db: Session = Depends(get_db_session)):
     budget_created, is_new = budget_view.create_budget(budget, db)
     
