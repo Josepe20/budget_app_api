@@ -52,3 +52,25 @@ def create_budget(budget: BudgetCreate, db: Session):
     created_budget = budget_repository.create_budget(new_budget)
     return created_budget, True
 
+
+def update_budget_totals(budget_id: int, type: str, operation: str, amount: float, db: Session):
+    budget_repository = BudgetRepository(db)
+
+    budget = budget_repository.get_budget_by_id(budget_id)
+    if not budget:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found")
+
+    # Determine whether we are going to add or restart according to the type of operation
+    if type == "income":
+        if operation == "sum":
+            budget.total_income += amount
+        elif operation == "sub":
+            budget.total_income -= amount
+    elif type == "expense":
+        if operation == "sum":
+            budget.total_expense += amount
+        elif operation == "sub":
+            budget.total_expense -= amount
+
+    budget_repository.update_budget(budget)
+    
