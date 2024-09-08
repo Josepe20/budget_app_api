@@ -6,7 +6,7 @@ class ExceptionHandlingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         try:
             response = await call_next(request)
-            return response
+            return response       
         except HTTPException as e:
             return JSONResponse(
                 status_code=e.status_code,
