@@ -6,6 +6,7 @@ from app.schemas.budget.income_schema import IncomeCreate, IncomeResponse
 from app.views.budget import incomes_view
 from app.schemas.response_schema import StandardResponse
 
+
 router = APIRouter()
 
 

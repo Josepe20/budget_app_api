@@ -1,25 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.views.users import users_view as user_views
-from app.schemas.users import users_schema as user_schemas
+from app.schemas.users.users_schema import UserCreate, UserResponse
 from app.functions.api_response import standard_response
 from sqlalchemy.orm import Session
 from app.dependencies import get_db_session
 from fastapi.security import OAuth2PasswordRequestForm
+from app.schemas.response_schema import StandardResponse
+
 
 router = APIRouter()
+
 
 @router.get("/")
 def user_home():
     return "Hello Users"
 
-@router.post("/register")
-def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_session)):
+@router.post("/register", response_model=StandardResponse[UserResponse])
+def register_user(user: UserCreate, db: Session = Depends(get_db_session)):
     user_registered, is_new = user_views.register_user(user, db)
     
     if not is_new:
-        return standard_response(status.HTTP_200_OK, "Email already registered", user_registered)
+        return standard_response(status.HTTP_200_OK, "Email already registered", user_registered, pydantic_model=UserResponse)
 
-    return standard_response(status.HTTP_201_CREATED, "User registered successfully", user_registered)      
+    return standard_response(status.HTTP_201_CREATED, "User registered successfully", user_registered, pydantic_model=UserResponse)      
    
 
 @router.post("/login")
