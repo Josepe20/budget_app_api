@@ -10,11 +10,17 @@ class IncomeCreate(IncomeBase):
     income_name: Optional[str] = None
 
 class IncomeResponse(IncomeBase):
-    budget_id: int
-    total_income: float
-    total_expense: str
+    income_id: int
+    income_name: str
+    amount: float
     created_at: datetime
 
     class Config:
         orm_mode = True
-        from_attributes = True 
+        from_attributes = True
+        model_config = {"from_attributes": True}
+
+        # This will automatically serialize datetime fields to ISO 8601 format
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),
+        }

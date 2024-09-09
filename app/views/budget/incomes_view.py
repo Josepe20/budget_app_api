@@ -90,7 +90,7 @@ def get_income_by_id(income_id: int, db: Session):
     income = income_repository.get_income_by_id(income_id)
     if not income:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Income not found")
-    return income
+    return IncomeResponse.model_validate(income)
 
 
 def get_user_incomes(user_id: int, db: Session):
