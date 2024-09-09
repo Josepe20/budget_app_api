@@ -32,6 +32,7 @@ def create_income(income_data: IncomeCreate, db: Session):
 
     # Refresh the object state
     db.refresh(created_income)
+    #return IncomeResponse.model_validate(created_income)
     return created_income
 
 
@@ -91,6 +92,7 @@ def get_income_by_id(income_id: int, db: Session):
     if not income:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Income not found")
     return IncomeResponse.model_validate(income)
+    #return income
 
 
 def get_user_incomes(user_id: int, db: Session):
