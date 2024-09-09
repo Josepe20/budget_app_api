@@ -13,6 +13,9 @@ class Budget(Base):
     total_expense = Column(Float, default=0)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
-    # Many-to-One relationship with Budget
+    # Many-to-One relationship with User
     user = relationship("User", back_populates="budgets")
+    
+    # One-to-Many relationship with Incomes
+    incomes = relationship("Incomes", back_populates="budget")
     
