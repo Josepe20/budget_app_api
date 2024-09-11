@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import extract
-from app.models.budget.budget import Budget
-from app.schemas.budget.budget_schema import BudgetResponse
+from app.api.BUDGET.budgets.budget_model import Budget
+from app.api.BUDGET.budgets.budget_schema import BudgetResponse
 
 
 class BudgetRepository:

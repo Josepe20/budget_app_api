@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from app.models.budget.budget import Budget
-from app.schemas.budget.budget_schema import BudgetCreate, BudgetResponse
-from app.repositories.budget.budget_repository import BudgetRepository
+from app.api.BUDGET.budgets.budget_model import Budget
+from app.api.BUDGET.budgets.budget_schema import BudgetCreate, BudgetResponse
+from app.api.BUDGET.budgets.budget_repository import BudgetRepository
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
 from app.functions.validate_active_month import validate_active_month

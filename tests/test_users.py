@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.dependencies import get_db_session
 from sqlalchemy import create_engine
-from api.AUTH.users.user_model import User
+from app.api.AUTH.users.user_model import User
 from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from decouple import config

@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from api.AUTH.users import users_router
-from app.router.budget import budget_router, incomes_router, expenses_router
+from api.BUDGET.budgets import budget_router
+from api.BUDGET.incomes import incomes_router
+from app.router.budget import expenses_router
 
 router = APIRouter()
 

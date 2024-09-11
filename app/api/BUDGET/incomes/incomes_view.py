@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from app.models.budget.incomes import Incomes
-from app.schemas.budget.income_schema import IncomeCreate, IncomeResponse
-from app.repositories.budget.incomes_repository import IncomeRepository
+from app.api.BUDGET.incomes.incomes_model import Incomes
+from app.api.BUDGET.incomes.incomes_schema import IncomeCreate, IncomeResponse
+from app.api.BUDGET.incomes.incomes_repository import IncomeRepository
 from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from app.functions.validate_active_month import validate_active_month
-from app.views.budget.budget_view import update_budget_totals
+from app.api.BUDGET.budgets.budget_view import update_budget_totals
 
 
 def create_income(income_data: IncomeCreate, db: Session):

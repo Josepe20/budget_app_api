@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.dependencies import get_db_session
 from app.functions.api_response import standard_response
-from app.schemas.budget.income_schema import IncomeCreate, IncomeResponse
-from app.views.budget import incomes_view
+from app.api.BUDGET.incomes.incomes_schema import IncomeCreate, IncomeResponse
+from app.api.BUDGET.incomes import incomes_view
 from app.schemas.response_schema import StandardResponse
 
 
