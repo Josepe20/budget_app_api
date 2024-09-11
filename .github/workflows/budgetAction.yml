@@ -40,4 +40,4 @@ jobs:
         export PORT_DB=${{ secrets.USERNAME_DB }}
         export DATABASE_NAME=${{ secrets.USERNAME_DB }}
 
-        pytest tests
+        
