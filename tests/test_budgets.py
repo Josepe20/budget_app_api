@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.models.budget.budget import Budget
-from app.models.users.users import User
+from api.AUTH.users.user_model import User
 from decouple import config
 from jose import jwt
 

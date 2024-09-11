@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.schemas.users import users_schema as  user_schemas
-from app.repositories.users.users_repository import UserRepository
-from app.models.users import users as user_models
+from app.api.AUTH.users import users_schema as  user_schemas
+from app.api.AUTH.users.users_repository import UserRepository
+from app.api.AUTH.users import user_model as user_models
 from app.dependencies import get_db_session
 from passlib.context import CryptContext
 from jose import JWTError, jwt

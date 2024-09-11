@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.views.users import users_view as user_views
-from app.schemas.users.users_schema import UserCreate, UserResponse
+from app.api.AUTH.users import users_view as user_views
+from app.api.AUTH.users.users_schema import UserCreate, UserResponse
 from app.functions.api_response import standard_response
 from sqlalchemy.orm import Session
 from app.dependencies import get_db_session

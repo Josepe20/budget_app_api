@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'app'))
 
 # Importa tu modelo Base aquí
 from app.database import Base  # Asegúrate de que esta ruta es correcta
-from models.users import users  # Importa todos los modelos necesarios
+from api.AUTH.users import user_model  # Importa todos los modelos necesarios
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
