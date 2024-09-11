@@ -7,5 +7,6 @@ class CategoryExpenses(Base):
     __table_args__ = {"schema": "budget"} 
 
     category_expense_id = Column(Integer, primary_key=True, index=True)
+    category_name = Column(String(100), nullable=False)
     description =Column(String(100), default=None)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
