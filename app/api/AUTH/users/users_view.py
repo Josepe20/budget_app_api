@@ -117,4 +117,4 @@ def activate_account(user_id: int, db: Session = Depends(get_db_session)):
         raise HTTPException(status_code=404, detail="User not found")
     user.is_verified = True
     user_repository.update_user(user)
-    return "Account successfully activated"
+    return user
