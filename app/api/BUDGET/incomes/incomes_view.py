@@ -4,7 +4,7 @@ from app.api.BUDGET.incomes.incomes_schema import IncomeCreate, IncomeResponse
 from app.api.BUDGET.incomes.incomes_repository import IncomeRepository
 from datetime import datetime, timezone
 from fastapi import HTTPException, status
-from app.functions.validate_active_month import validate_active_month
+from app.common.functions.validate_active_month import validate_active_month
 from app.api.BUDGET.budgets.budget_view import update_budget_totals
 
 

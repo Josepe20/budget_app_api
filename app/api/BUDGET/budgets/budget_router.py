@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.dependencies import get_db_session
-from app.functions.api_response import standard_response
+from app.common.functions.api_response import standard_response
 from app.api.BUDGET.budgets.budget_schema import BudgetCreate, BudgetResponse
 from app.api.BUDGET.budgets import budget_view
-from app.schemas.response_schema import StandardResponse
+from app.common.schemas.response_schema import StandardResponse
 
 
 router = APIRouter()

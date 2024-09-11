@@ -4,7 +4,7 @@ from app.api.BUDGET.budgets.budget_schema import BudgetCreate, BudgetResponse
 from app.api.BUDGET.budgets.budget_repository import BudgetRepository
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
-from app.functions.validate_active_month import validate_active_month
+from app.common.functions.validate_active_month import validate_active_month
 
 
 def get_all_budgets(db: Session):

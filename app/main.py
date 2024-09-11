@@ -29,7 +29,7 @@ app.add_middleware(ExceptionHandlingMiddleware)
 
 
 # Incluir el router principal
-app.include_router(router_index.router)
+app.include_router(router_index.router, prefix="/api")
 
 @app.get("/")
 def read_root():
