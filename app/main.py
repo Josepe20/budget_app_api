@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.router import index as router_index
+from app.api import index_router as router_index
 from fastapi.middleware.cors import CORSMiddleware
 from app.middleware.logging_middleware import LoggingMiddleware
 from app.middleware.auth_middleware import AuthMiddleware
@@ -28,7 +28,7 @@ app.add_middleware(ExceptionHandlingMiddleware)
 
 
 # Incluir el router principal
-app.include_router(router_index.router)
+app.include_router(router_index.router, prefix="/api")
 
 @app.get("/")
 def read_root():
