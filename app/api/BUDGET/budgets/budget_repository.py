@@ -26,7 +26,7 @@ class BudgetRepository:
             extract('year', Budget.created_at) == year
         ).first()
 
-    def create_budget(self, budget: Budget):
+    def create_budget(self, budget: Budget) -> Budget:
         self.db.add(budget)
         self.db.commit()
         self.db.refresh(budget)

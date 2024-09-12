@@ -13,7 +13,7 @@ def create_expense(expense_data: ExpenseCreate, db: Session):
     new_expense = Expenses(
         budget_id=expense_data.budget_id,
         category_expense_id=expense_data.category_expense_id,
-        income_name=expense_data.income_name,
+        expense_name=expense_data.expense_name,
         amount=expense_data.amount, 
         created_at=datetime.now(timezone.utc)
     )
@@ -25,7 +25,7 @@ def create_expense(expense_data: ExpenseCreate, db: Session):
     # update the total budget expense
     update_budget_totals(
         budget_id=expense_data.budget_id, 
-        type="income", 
+        type="expense", 
         operation="sum", 
         amount=new_expense.amount, 
         db=db
@@ -53,7 +53,7 @@ def update_expense(expense_id: int, expense_data: dict, db: Session):
     # update the total budget expense
     update_budget_totals(
         budget_id=updated_expense.budget_id,
-        type="income",
+        type="expense",
         operation="sum" if difference > 0 else "sub",
         amount=abs(difference),
         db=db
@@ -76,13 +76,13 @@ def delete_expense(expense_id: int, db: Session):
     # update the total budget expense
     update_budget_totals(
         budget_id=expense_to_delete.budget_id, 
-        type="income", 
+        type="expense", 
         operation="sub", 
         amount=expense_to_delete.amount, 
         db=db
     )
 
-    deleted_expense = expense_repository.delete_income(expense_id)
+    deleted_expense = expense_repository.delete_expense(expense_id)
     return deleted_expense
 
 

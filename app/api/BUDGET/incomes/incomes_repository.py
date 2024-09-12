@@ -8,13 +8,13 @@ class IncomeRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_income(self, income: Incomes):
+    def create_income(self, income: Incomes) -> Incomes:
         self.db.add(income)
         self.db.commit()
         self.db.refresh(income)
         return income
 
-    def update_income(self, income_id: int, new_data: dict):
+    def update_income(self, income_id: int, new_data: dict) -> Incomes:
         income = self.db.query(Incomes).filter(Incomes.income_id == income_id).first()
         if income:
             for key, value in new_data.items():
@@ -23,20 +23,20 @@ class IncomeRepository:
             self.db.refresh(income)
         return income
 
-    def delete_income(self, income_id: int):
+    def delete_income(self, income_id: int) -> Incomes:
         income = self.db.query(Incomes).filter(Incomes.income_id == income_id).first()
         if income:
             self.db.delete(income)
             self.db.commit()
         return income
 
-    def get_income_by_id(self, income_id: int):
+    def get_income_by_id(self, income_id: int) -> Incomes:
         return self.db.query(Incomes).filter(Incomes.income_id == income_id).first()
 
-    def get_user_incomes(self, user_id: int):
+    def get_user_incomes(self, user_id: int) -> list[Incomes]:
         return self.db.query(Incomes).join(Budget).filter(Budget.user_id == user_id).all()
 
-    def get_user_active_incomes(self, user_id: int, current_month: int, current_year: int):
+    def get_user_active_incomes(self, user_id: int, current_month: int, current_year: int) -> list[Incomes]:
         return self.db.query(Incomes).join(Budget).filter(
             Budget.user_id == user_id,
             extract('month', Budget.created_at) == current_month,
