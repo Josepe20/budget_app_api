@@ -57,8 +57,8 @@ def clear_user_in_db():
 
 @pytest.fixture
 def test_budget(test_user):
-    client.post("/users/register", json=test_user)   
-    user_response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})
+    client.post("/api/users/register", json=test_user)   
+    user_response = client.post("/api/users/login", data={"username": test_user["username"], "password": test_user["password"]})
     
     # Extract user_id from login access token 
     access_token = user_response.json()["data"]["access_token"]
@@ -84,7 +84,7 @@ def clear_budget_in_db(user_id: int):
 
 def test_create_budget(test_budget):
     # First attempt: Create the budget
-    response = client.post("/budgets/create", json=test_budget)
+    response = client.post("/api/budgets/create", json=test_budget)
 
     # Handle both possible cases:
     if response.status_code == 201:
@@ -96,7 +96,7 @@ def test_create_budget(test_budget):
         pytest.fail(f"Unexpected status code: {response.status_code}")
     
     # Second attempt: The budget already exists for this month, so it should return 200
-    response = client.post("/budgets/create", json=test_budget)
+    response = client.post("/api/budgets/create", json=test_budget)
     assert response.status_code == 200
     assert response.json()["message"] == "Budget already exist"
 
@@ -104,11 +104,11 @@ def test_create_budget(test_budget):
 
 def test_get_budget_by_id(test_budget):
     # Create a budget first
-    create_response = client.post("/budgets/create", json=test_budget)
+    create_response = client.post("/api/budgets/create", json=test_budget)
     budget_id = create_response.json()["data"]["budget_id"]
 
     # Fetch the budget by ID
-    response = client.get(f"/budgets/{budget_id}")
+    response = client.get(f"/api/budgets/{budget_id}")
     assert response.status_code == 200
     assert response.json()["message"] == "Budget found"
     assert response.json()["data"]["budget_id"] == budget_id
@@ -116,11 +116,11 @@ def test_get_budget_by_id(test_budget):
 
 def test_get_all_budgets_by_user(test_budget):
     # Ensure a budget exists for the test user
-    client.post("/budgets/create", json=test_budget)
+    client.post("/api/budgets/create", json=test_budget)
 
     # Fetch all budgets for the user
     user_id = test_budget["user_id"]
-    response = client.get(f"/budgets/user/{user_id}")
+    response = client.get(f"/api/budgets/user/{user_id}")
     assert response.status_code == 200
     assert response.json()["message"] == "Budgets fetched successfully"
     assert len(response.json()["data"]) > 0

@@ -51,7 +51,7 @@ def clear_user_in_db():
 def test_register_user(test_user):
     try:
         # Primer intento: el usuario debería registrarse correctamente
-        response = client.post("/users/register", json=test_user)
+        response = client.post("/api/users/register", json=test_user)
         assert response.status_code == 201
         assert response.json()["message"] == "User registered successfully"
     except AssertionError:
@@ -60,17 +60,17 @@ def test_register_user(test_user):
         assert response.json()["message"] == "Email already registered"
     
     # Intentar de nuevo para asegurarse de que en el segundo intento ya existe el email
-    response = client.post("/users/register", json=test_user)
+    response = client.post("/api/users/register", json=test_user)
     assert response.status_code == 200
     assert response.json()["message"] == "Email already registered"
 
 
 def test_login_user(test_user):
     # Aseguramos que el usuario ya está registrado
-    client.post("/users/register", json=test_user)
+    client.post("/api/users/register", json=test_user)
 
      # Intentamos hacer login con el usuario registrado
-    response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})
+    response = client.post("/api/users/login", data={"username": test_user["username"], "password": test_user["password"]})
     assert response.status_code == 200
     assert response.json()["message"] == "Login successful"
     assert "access_token" in response.json()["data"]
@@ -78,12 +78,12 @@ def test_login_user(test_user):
 
 def test_refresh_token(test_user):
      # Registramos al usuario y obtenemos el token de acceso y de refresco
-    client.post("/users/register", json=test_user)
-    login_response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})
+    client.post("/api/users/register", json=test_user)
+    login_response = client.post("/api/users/login", data={"username": test_user["username"], "password": test_user["password"]})
     refresh_token = login_response.json()["data"]["refresh_token"]
 
     # Intentamos refrescar el token
-    refresh_response = client.post("/users/refresh", json={"refresh_token": refresh_token})
+    refresh_response = client.post("/api/users/refresh", json={"refresh_token": refresh_token})
     assert refresh_response.status_code == 200
     assert refresh_response.json()["message"] == "Token refreshed successfully"
     assert "access_token" in refresh_response.json()["data"]
