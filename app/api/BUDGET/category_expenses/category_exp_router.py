@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/", response_model=StandardResponse[list[CategoryExpensesResponse]])
 def get_all_categories(db: Session = Depends(get_db_session)):
     categories_list = category_exp_view.get_all_categories(db)
-    return standard_response(status.HTTP_200_OK, "category found", categories_list, pydantic_model=CategoryExpensesResponse)
+    return standard_response(status.HTTP_200_OK, "categories found", categories_list, pydantic_model=CategoryExpensesResponse)
 
 
 @router.get("/{category_id}", response_model=StandardResponse[CategoryExpensesResponse])

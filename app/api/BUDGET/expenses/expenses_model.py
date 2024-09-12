@@ -14,6 +14,8 @@ class Expenses(Base):
     expense_name = Column(String(100), default=None)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
-    # Relaciones opcionales con las tablas Budget y CategoryExpense
+    # Many to One RelationShip with Budget
     budget = relationship("Budget", back_populates="expenses")
+
+    # Many to One RelationShip with CategoryExpenses
     category_expense = relationship("CategoryExpenses", back_populates="expenses")

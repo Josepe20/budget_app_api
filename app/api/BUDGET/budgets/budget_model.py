@@ -18,4 +18,7 @@ class Budget(Base):
     
     # One-to-Many relationship with Incomes
     incomes = relationship("Incomes", back_populates="budget")
+
+    # One-to-Many relationship with Incomes
+    expenses = relationship("Expenses", back_populates="budget")
     
