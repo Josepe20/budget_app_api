@@ -24,8 +24,8 @@ def update_income(income_id: int, income: IncomeCreate, db: Session = Depends(ge
 
 @router.delete("/delete/{income_id}", response_model=StandardResponse[IncomeResponse])
 def delete_income(income_id: int, db: Session = Depends(get_db_session)):
-    deleted_message = incomes_view.delete_income(income_id, db)
-    return standard_response(status.HTTP_200_OK, "income deleted succesfully", deleted_message, pydantic_model=IncomeResponse)
+    deleted_income = incomes_view.delete_income(income_id, db)
+    return standard_response(status.HTTP_200_OK, "income deleted succesfully", deleted_income, pydantic_model=IncomeResponse)
     
 
 @router.get("/{income_id}", response_model=StandardResponse[IncomeResponse])

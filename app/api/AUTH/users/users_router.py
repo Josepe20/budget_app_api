@@ -41,8 +41,8 @@ def refresh_token(data: dict, db: Session = Depends(get_db_session)):
     return standard_response(status.HTTP_200_OK, "Token refreshed successfully", tokens_refreshed)
     
 
-@router.get("/activate/{user_id}")
+@router.get("/activate/{user_id}", response_model=StandardResponse[UserResponse])
 def activate_account(user_id: int, db: Session = Depends(get_db_session)):
-    response_message = user_views.activate_account(user_id, db)
-    return standard_response(status.HTTP_200_OK, response_message)
+    user_activated = user_views.activate_account(user_id, db)
+    return standard_response(status.HTTP_200_OK, "User activated succesfully", user_activated, pydantic_model=UserResponse)
 

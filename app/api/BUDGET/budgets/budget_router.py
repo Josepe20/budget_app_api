@@ -19,7 +19,7 @@ def get_all_budgets(db: Session = Depends(get_db_session)):
 @router.get("/user/{user_id}", response_model=StandardResponse[list[BudgetResponse]])
 def get_all_user_budgets(user_id: int, db: Session = Depends(get_db_session)):
     budget_list = budget_view.get_all_budgets_by_user(user_id, db)
-    return standard_response(status.HTTP_200_OK, "Budgets fetched successfully", budget_list, budget_list, pydantic_model=BudgetResponse)
+    return standard_response(status.HTTP_200_OK, "Budgets fetched successfully", budget_list, pydantic_model=BudgetResponse)
     
 
 @router.get("/{budget_id}", response_model=StandardResponse[BudgetResponse])

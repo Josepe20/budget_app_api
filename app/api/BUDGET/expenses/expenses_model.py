@@ -8,12 +8,14 @@ class Expenses(Base):
     __table_args__ = {"schema": "budget"} 
 
     expense_id = Column(Integer, primary_key=True, index=True)
-    budget_id = Column(Integer, ForeignKey('budget.budget.budget_id'), nullable=False)
+    budget_id = Column(Integer, ForeignKey('budget.budget.budget_id', ondelete="CASCADE"), nullable=False)
     category_expense_id = Column(Integer, ForeignKey('budget.category_expenses.category_expense_id'), nullable=False)
     amount = Column(Float, default=0)
     expense_name = Column(String(100), default=None)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
-    # Relaciones opcionales con las tablas Budget y CategoryExpense
+    # Many to One RelationShip with Budget
     budget = relationship("Budget", back_populates="expenses")
+
+    # Many to One RelationShip with CategoryExpenses
     category_expense = relationship("CategoryExpenses", back_populates="expenses")
