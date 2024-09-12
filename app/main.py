@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.middleware.logging_middleware import LoggingMiddleware
 from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.exception_middleware import ExceptionHandlingMiddleware
+from mangum import Mangum
 
 app = FastAPI()
 
@@ -33,3 +34,7 @@ app.include_router(router_index.router, prefix="/api")
 @app.get("/")
 def read_root():
     return {"message": "Welcome to My Budget App"}
+
+
+# handler for AWS Lambda
+handler = Mangum(app, lifespan="off")

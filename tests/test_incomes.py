@@ -53,8 +53,8 @@ def test_user():
 @pytest.fixture
 def test_budget(test_user):
     # Ensure the user is created before creating a budget
-    client.post("/users/register", json=test_user)
-    user_response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})
+    client.post("/api/users/register", json=test_user)
+    user_response = client.post("/api/users/login", data={"username": test_user["username"], "password": test_user["password"]})
     
     # Extract user_id from login access token 
     access_token = user_response.json()["data"]["access_token"]
@@ -69,7 +69,7 @@ def test_budget(test_user):
         "total_income": 0,
         "total_expense": 0
     }
-    create_budget_response = client.post("/budgets/create", json=budget_data)
+    create_budget_response = client.post("/api/budgets/create", json=budget_data)
     return create_budget_response.json()["data"]
 
 @pytest.fixture
@@ -90,7 +90,7 @@ def clear_income_in_db(income_id: int):
 #################### Test cases ########################
 
 def test_create_income(test_income):
-    response = client.post("/incomes/create", json=test_income)
+    response = client.post("/api/incomes/create", json=test_income)
     assert response.status_code == 201
     assert response.json()["message"] == "income created succesfully"
     assert response.json()["data"]["income_name"] == "Test Income"
@@ -98,7 +98,7 @@ def test_create_income(test_income):
 
 def test_update_income(test_income):
     # First create the income
-    create_response = client.post("/incomes/create", json=test_income)
+    create_response = client.post("/api/incomes/create", json=test_income)
     income_id = create_response.json()["data"]["income_id"]
 
     # Update the income
@@ -107,7 +107,7 @@ def test_update_income(test_income):
         "amount": 2000.0,
         "income_name": "Updated Income"
     }
-    response = client.put(f"/incomes/update/{income_id}", json=updated_data)
+    response = client.put(f"/api/incomes/update/{income_id}", json=updated_data)
     assert response.status_code == 200
     assert response.json()["message"] == "income updated successfully"
     assert response.json()["data"]["amount"] == 2000.0
@@ -118,22 +118,22 @@ def test_update_income(test_income):
 
 def test_delete_income(test_income):
     # First create the income
-    create_response = client.post("/incomes/create", json=test_income)
+    create_response = client.post("/api/incomes/create", json=test_income)
     income_id = create_response.json()["data"]["income_id"]
 
     # Delete the income
-    response = client.delete(f"/incomes/delete/{income_id}")
+    response = client.delete(f"/api/incomes/delete/{income_id}")
     assert response.status_code == 200
     assert response.json()["message"] == "income deleted succesfully"
 
 
 def test_get_income_by_id(test_income):
     # First create the income
-    create_response = client.post("/incomes/create", json=test_income)
+    create_response = client.post("/api/incomes/create", json=test_income)
     income_id = create_response.json()["data"]["income_id"]
 
     # Get the income by ID
-    response = client.get(f"/incomes/{income_id}")
+    response = client.get(f"/api/incomes/{income_id}")
     assert response.status_code == 200
     assert response.json()["message"] == "income found"
     assert response.json()["data"]["income_name"] == test_income["income_name"]
@@ -144,17 +144,17 @@ def test_get_income_by_id(test_income):
 
 def test_get_user_incomes(test_user, test_budget, test_income):
     # First create the income
-    client.post("/incomes/create", json=test_income)
+    client.post("/api/incomes/create", json=test_income)
 
     # Get all incomes for the user
-    user_response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})  
+    user_response = client.post("/api/users/login", data={"username": test_user["username"], "password": test_user["password"]})  
     # Extract user_id from login access token 
     access_token = user_response.json()["data"]["access_token"]
     decoded_token = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
     sub_content = decoded_token.get("sub")
     user_id = sub_content.split("-")[0] 
 
-    response = client.get(f"/incomes/user/{user_id}")
+    response = client.get(f"/api/incomes/user/{user_id}")
     assert response.status_code == 200
     assert response.json()["message"] == "incomes found"
     assert len(response.json()["data"]) > 0
@@ -162,17 +162,17 @@ def test_get_user_incomes(test_user, test_budget, test_income):
 
 def test_get_user_active_incomes(test_user, test_budget, test_income):
     # First create the income
-    client.post("/incomes/create", json=test_income)
+    client.post("/api/incomes/create", json=test_income)
 
     # Get active incomes for the user
-    user_response = client.post("/users/login", data={"username": test_user["username"], "password": test_user["password"]})  
+    user_response = client.post("/api/users/login", data={"username": test_user["username"], "password": test_user["password"]})  
     # Extract user_id from login access token 
     access_token = user_response.json()["data"]["access_token"]
     decoded_token = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
     sub_content = decoded_token.get("sub")
     user_id = sub_content.split("-")[0] 
     
-    response = client.get(f"/incomes/user/{user_id}/active")
+    response = client.get(f"/api/incomes/user/{user_id}/active")
     assert response.status_code == 200
     assert response.json()["message"] == "incomes found"
     assert len(response.json()["data"]) > 0
