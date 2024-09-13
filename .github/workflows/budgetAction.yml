@@ -39,8 +39,20 @@ jobs:
         export HOST_DB=${{ secrets.HOST_DB }}
         export PORT_DB=${{ secrets.PORT_DB }}
         export DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+        
+        export SECRET_KEY=${{ secrets.SECRET_KEY }}
+        export ALGORITHM=${{ secrets.ALGORITHM }}
+        export ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+
+        export SMTP_SERVER=${{ secrets.SMTP_SERVER }}
+        export SMTP_PORT=${{ secrets.SMTP_PORT }}
+        export SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+        export SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+        export EMAIL_FROM=${{ secrets.EMAIL_FROM }}
+        export EMAIL_SUBJECT=${{ secrets.EMAIL_SUBJECT }}
 
         pytest tests
+
 
 
         
