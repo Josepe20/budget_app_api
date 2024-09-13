@@ -35,9 +35,12 @@ jobs:
         source venv/bin/activate
 
         export USERNAME_DB=${{ secrets.USERNAME_DB }}
-        export PASSWORD_DB=${{ secrets.USERNAME_DB }}
-        export HOST_DB=${{ secrets.USERNAME_DB }}
-        export PORT_DB=${{ secrets.USERNAME_DB }}
-        export DATABASE_NAME=${{ secrets.USERNAME_DB }}
+        export PASSWORD_DB=${{ secrets.PASSWORD_DB }}
+        export HOST_DB=${{ secrets.HOST_DB }}
+        export PORT_DB=${{ secrets.PORT_DB }}
+        export DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+
+        pytest tests
+
 
         
