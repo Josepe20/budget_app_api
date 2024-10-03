@@ -20,3 +20,14 @@ class UserResponse(UserBase):
         from_attributes = True
 
 
+###############  Tokens Schemas #####################
+
+class TokenBase(BaseModel):  
+    refresh_token: str 
+    token_type: str
+
+class LoginResponse(UserBase):
+   access_token: str
+
+
+
