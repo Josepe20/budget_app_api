@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from app.api.AUTH.users import users_view as user_views
-from app.api.AUTH.users.users_schema import UserCreate, UserResponse, TokenBase, LoginResponse
+from app.api.AUTH.users.users_schema import UserCreate, UserResponse,TokenBase, LoginResponse
 from app.common.functions.api_response import standard_response
 from sqlalchemy.orm import Session
 from app.dependencies import get_db_session
@@ -45,4 +45,34 @@ def refresh_token(data: dict, db: Session = Depends(get_db_session)):
 def activate_account(user_id: int, db: Session = Depends(get_db_session)):
     user_activated = user_views.activate_account(user_id, db)
     return standard_response(status.HTTP_200_OK, "User activated succesfully", user_activated, pydantic_model=UserResponse)
+
+
+@router.get("/{user_id}", response_model=StandardResponse[UserResponse])
+def get_user_by_id(user_id: int, db: Session = Depends(get_db_session)):
+    user_found = user_views.get_user_by_id(user_id, db)
+    return standard_response(status.HTTP_200_OK, "User found succesfully", user_found, pydantic_model=UserResponse)
+
+
+@router.get("/find/{user_email}/", response_model=StandardResponse[UserResponse])
+def get_user_by_email(user_email: str, db: Session = Depends(get_db_session)):
+    user_found = user_views.get_user_by_email(user_email, db)
+    return standard_response(status.HTTP_200_OK, "User found succesfully", user_found, pydantic_model=UserResponse)
+
+
+@router.patch("/update/{user_id}/email", response_model=StandardResponse[UserResponse])
+def update_user_email_by_id(user_id: int, new_email: str = Form(...), db: Session = Depends(get_db_session)):
+    user_updated = user_views.update_user_email_by_id(user_id, new_email,db)
+    return standard_response(status.HTTP_200_OK, "User Email updated succesfully", user_updated, pydantic_model=UserResponse)
+
+
+@router.patch("/update/{user_id}/password", response_model=StandardResponse[UserResponse])
+def update_user_password_by_id(user_id: int, new_password: str = Form(...),db: Session = Depends(get_db_session)):
+    user_updated = user_views.update_user_password_by_id(user_id, new_password,db)
+    return standard_response(status.HTTP_200_OK, "User Password updated succesfully", user_updated, pydantic_model=UserResponse)
+
+
+@router.delete("/delete/{user_id}", response_model=StandardResponse[UserResponse])
+def delete_user_by_id(user_id: int, db: Session = Depends(get_db_session)):
+    user_deleted = user_views.delete_user_by_id(user_id, db)
+    return standard_response(status.HTTP_200_OK, "User deleted succesfully", user_deleted, pydantic_model=UserResponse)
 

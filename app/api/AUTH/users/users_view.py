@@ -118,3 +118,61 @@ def activate_account(user_id: int, db: Session = Depends(get_db_session)):
     user.is_verified = True
     user_repository.update_user(user)
     return user
+
+
+def get_user_by_id(user_id: int, db: Session = Depends(get_db_session)):
+    user_repository = UserRepository(db)
+
+    user = user_repository.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user  
+
+
+def get_user_by_email(user_email: str, db: Session = Depends(get_db_session)):
+    user_repository = UserRepository(db)
+
+    user = user_repository.get_user_by_email(user_email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user  
+
+
+def update_user_email_by_id(user_id: int, new_email:str, db: Session = Depends(get_db_session)):
+    user_repository = UserRepository(db)
+
+    user = user_repository.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.email = new_email
+    user_repository.update_user(user)
+    
+    return user
+
+
+def update_user_password_by_id(user_id: int, new_password: str, db: Session = Depends(get_db_session)):
+    user_repository = UserRepository(db)
+
+    user = user_repository.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    hashed_password = get_password_hash(new_password)
+    user.password = hashed_password
+    user_repository.update_user(user)
+    
+    return user
+
+
+def delete_user_by_id(user_id: int, db: Session = Depends(get_db_session)):
+    user_repository = UserRepository(db)
+
+    user_to_delete = user_repository.get_user_by_id(user_id)
+    if not user_to_delete:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    deleted_user = user_repository.deleted_user(user_id)
+    return deleted_user
+
