@@ -8,7 +8,7 @@ from app.common.functions.validate_active_month import validate_active_month
 from app.api.BUDGET.budgets.budget_view import update_budget_totals
 
 
-def create_income(income_data: IncomeCreate, db: Session):
+def create_income(income_data: IncomeCreate, db: Session) -> IncomeResponse:
     income_repository = IncomeRepository(db)
     new_income = Incomes(
         budget_id=income_data.budget_id,
@@ -35,7 +35,7 @@ def create_income(income_data: IncomeCreate, db: Session):
     return created_income
 
 
-def update_income(income_id: int, income_data: dict, db: Session):
+def update_income(income_id: int, income_data: dict, db: Session) -> IncomeResponse:
     income_repository = IncomeRepository(db)
 
     income_to_update = income_repository.get_income_by_id(income_id)
@@ -63,7 +63,7 @@ def update_income(income_id: int, income_data: dict, db: Session):
     return updated_income
 
 
-def delete_income(income_id: int, db: Session):
+def delete_income(income_id: int, db: Session) -> IncomeResponse:
     income_repository = IncomeRepository(db)
 
     income_to_delete = income_repository.get_income_by_id(income_id)
@@ -85,7 +85,7 @@ def delete_income(income_id: int, db: Session):
     return deleted_income
 
 
-def get_income_by_id(income_id: int, db: Session):
+def get_income_by_id(income_id: int, db: Session) -> IncomeResponse:
     income_repository = IncomeRepository(db)
     income = income_repository.get_income_by_id(income_id)
     if not income:
@@ -93,7 +93,7 @@ def get_income_by_id(income_id: int, db: Session):
     return income
 
 
-def get_user_incomes(user_id: int, db: Session):
+def get_user_incomes(user_id: int, db: Session) -> list[IncomeResponse]:
     income_repository = IncomeRepository(db)
     incomes = income_repository.get_user_incomes(user_id)
     if not incomes:
@@ -101,7 +101,7 @@ def get_user_incomes(user_id: int, db: Session):
     return incomes
 
 
-def get_user_active_incomes(user_id: int, db: Session):
+def get_user_active_incomes(user_id: int, db: Session) -> list[IncomeResponse]:
     income_repository = IncomeRepository(db)
     current_month = datetime.now().month
     current_year = datetime.now().year

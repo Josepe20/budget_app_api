@@ -2,13 +2,13 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from app.api.BUDGET.expenses.expenses_model import Expenses
-from app.api.BUDGET.expenses.expenses_schema import ExpenseCreate
+from app.api.BUDGET.expenses.expenses_schema import ExpenseCreate, ExpenseResponse
 from app.api.BUDGET.expenses.expenses_repository import ExpenseRepository
 from app.common.functions.validate_active_month import validate_active_month
 from app.api.BUDGET.budgets.budget_view import update_budget_totals
 
 
-def create_expense(expense_data: ExpenseCreate, db: Session):
+def create_expense(expense_data: ExpenseCreate, db: Session) -> ExpenseResponse:
     expense_repository = ExpenseRepository(db)
     new_expense = Expenses(
         budget_id=expense_data.budget_id,
@@ -36,7 +36,7 @@ def create_expense(expense_data: ExpenseCreate, db: Session):
     return created_expense
 
 
-def update_expense(expense_id: int, expense_data: dict, db: Session):
+def update_expense(expense_id: int, expense_data: dict, db: Session) -> ExpenseResponse:
     expense_repository = ExpenseRepository(db)
 
     expense_to_update = expense_repository.get_expense_by_id(expense_id)
@@ -64,7 +64,7 @@ def update_expense(expense_id: int, expense_data: dict, db: Session):
     return updated_expense
 
 
-def delete_expense(expense_id: int, db: Session):
+def delete_expense(expense_id: int, db: Session) -> ExpenseResponse:
     expense_repository = ExpenseRepository(db)
 
     expense_to_delete = expense_repository.get_expense_by_id(expense_id)
@@ -86,7 +86,7 @@ def delete_expense(expense_id: int, db: Session):
     return deleted_expense
 
 
-def get_expense_by_id(expense_id: int, db: Session):
+def get_expense_by_id(expense_id: int, db: Session) -> ExpenseResponse:
     expense_repository = ExpenseRepository(db)
     expense = expense_repository.get_expense_by_id(expense_id)
     if not expense:
@@ -94,7 +94,7 @@ def get_expense_by_id(expense_id: int, db: Session):
     return expense
 
 
-def get_user_expenses(user_id: int, db: Session):
+def get_user_expenses(user_id: int, db: Session) -> list[ExpenseResponse]:
     expense_repository = ExpenseRepository(db)
     expenses = expense_repository.get_user_expenses(user_id)
     if not expenses:
@@ -102,7 +102,7 @@ def get_user_expenses(user_id: int, db: Session):
     return expenses
 
 
-def get_user_active_expenses(user_id: int, db: Session):
+def get_user_active_expenses(user_id: int, db: Session) -> list[ExpenseResponse]:
     expense_repository = ExpenseRepository(db)
     current_month = datetime.now().month
     current_year = datetime.now().year
@@ -112,7 +112,7 @@ def get_user_active_expenses(user_id: int, db: Session):
     return expenses
 
 
-def get_user_expenses_by_category(user_id: int, category_id: int, db: Session):
+def get_user_expenses_by_category(user_id: int, category_id: int, db: Session) -> list[ExpenseResponse]:
     expense_repository = ExpenseRepository(db)
     expenses = expense_repository.get_user_expenses_by_category(user_id, category_id)
     if not expenses:
@@ -120,7 +120,7 @@ def get_user_expenses_by_category(user_id: int, category_id: int, db: Session):
     return expenses
 
 
-def get_user_active_expenses_by_category(user_id: int, category_id: int, db: Session):
+def get_user_active_expenses_by_category(user_id: int, category_id: int, db: Session) -> list[ExpenseResponse]:
     expense_repository = ExpenseRepository(db)
     current_month = datetime.now().month
     current_year = datetime.now().year

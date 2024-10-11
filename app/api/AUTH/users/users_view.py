@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.api.AUTH.users import users_schema as  user_schemas
+from app.api.AUTH.users.users_schema import UserCreate, UserResponse, LoginResponse, TokenBase
 from app.api.AUTH.users.users_repository import UserRepository
 from app.api.AUTH.users import user_model as user_models
 from app.dependencies import get_db_session
@@ -20,13 +20,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()
 
-def get_password_hash(password):
+def get_password_hash(password) -> str:
     return pwd_context.hash(password)
 
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password, hashed_password) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> dict:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -41,7 +41,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     }
 
 
-def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_session)):
+def register_user(user: UserCreate, db: Session = Depends(get_db_session)):
     user_repository = UserRepository(db)
 
     db_user = user_repository.get_user_by_email(user.email)
@@ -61,7 +61,7 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db_se
     return created_user, True
 
 
-def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db_session)):
+def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db_session)) -> LoginResponse:
     user_repository = UserRepository(db)
 
     user = user_repository.get_user_by_username(form_data.username)
@@ -81,7 +81,7 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     }
 
 
-def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
+def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)) -> TokenBase:
     try:
         user_repository = UserRepository(db)
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -109,7 +109,7 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Server error")
 
     
-def activate_account(user_id: int, db: Session = Depends(get_db_session)):
+def activate_account(user_id: int, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
     user = user_repository.get_user_by_id(user_id)
@@ -120,7 +120,7 @@ def activate_account(user_id: int, db: Session = Depends(get_db_session)):
     return user
 
 
-def get_user_by_id(user_id: int, db: Session = Depends(get_db_session)):
+def get_user_by_id(user_id: int, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
     user = user_repository.get_user_by_id(user_id)
@@ -130,7 +130,7 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db_session)):
     return user  
 
 
-def get_user_by_email(user_email: str, db: Session = Depends(get_db_session)):
+def get_user_by_email(user_email: str, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
     user = user_repository.get_user_by_email(user_email)
@@ -140,7 +140,7 @@ def get_user_by_email(user_email: str, db: Session = Depends(get_db_session)):
     return user  
 
 
-def update_user_email_by_id(user_id: int, new_email:str, db: Session = Depends(get_db_session)):
+def update_user_email_by_id(user_id: int, new_email:str, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
     user = user_repository.get_user_by_id(user_id)
@@ -152,7 +152,7 @@ def update_user_email_by_id(user_id: int, new_email:str, db: Session = Depends(g
     return user
 
 
-def update_user_password_by_id(user_id: int, new_password: str, db: Session = Depends(get_db_session)):
+def update_user_password_by_id(user_id: int, new_password: str, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
     user = user_repository.get_user_by_id(user_id)
@@ -166,7 +166,7 @@ def update_user_password_by_id(user_id: int, new_password: str, db: Session = De
     return user
 
 
-def delete_user_by_id(user_id: int, db: Session = Depends(get_db_session)):
+def delete_user_by_id(user_id: int, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
     user_to_delete = user_repository.get_user_by_id(user_id)

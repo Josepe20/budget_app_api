@@ -7,12 +7,12 @@ from datetime import datetime, timezone
 from app.common.functions.validate_active_month import validate_active_month
 
 
-def get_all_budgets(db: Session):
+def get_all_budgets(db: Session) -> list[BudgetResponse]:
     budget_repository = BudgetRepository(db)
     return budget_repository.get_all()
 
 
-def get_all_budgets_by_user(user_id: int, db: Session):
+def get_all_budgets_by_user(user_id: int, db: Session) -> list[BudgetResponse]:
     budget_repository = BudgetRepository(db)
 
     if len(budget_repository.get_all_by_user_id(user_id)) < 1:
@@ -21,7 +21,7 @@ def get_all_budgets_by_user(user_id: int, db: Session):
     return budget_repository.get_all_by_user_id(user_id)
 
 
-def get_budget_by_id(budget_id: int, db: Session):
+def get_budget_by_id(budget_id: int, db: Session) -> BudgetResponse:
     budget_repository = BudgetRepository(db)
 
     budget = budget_repository.get_budget_by_id(budget_id)
@@ -53,7 +53,7 @@ def create_budget(budget: BudgetCreate, db: Session):
     return created_budget, True
 
 
-def update_budget_totals(budget_id: int, type: str, operation: str, amount: float, db: Session):
+def update_budget_totals(budget_id: int, type: str, operation: str, amount: float, db: Session) -> BudgetResponse:
     budget_repository = BudgetRepository(db)
 
     budget = budget_repository.get_budget_by_id(budget_id)
