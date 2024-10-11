@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from fastapi import HTTPException, status
 from app.api.BUDGET.expenses.expenses_model import Expenses
 from app.api.BUDGET.expenses.expenses_schema import ExpenseCreate, ExpenseResponse
 from app.api.BUDGET.expenses.expenses_repository import ExpenseRepository
 from app.common.functions.validate_active_month import validate_active_month
+from app.common.functions.get_obj_or_404 import get_object_or_404, get_list_or_404
 from app.api.BUDGET.budgets.budget_view import update_budget_totals
 
 
@@ -39,9 +39,7 @@ def create_expense(expense_data: ExpenseCreate, db: Session) -> ExpenseResponse:
 def update_expense(expense_id: int, expense_data: dict, db: Session) -> ExpenseResponse:
     expense_repository = ExpenseRepository(db)
 
-    expense_to_update = expense_repository.get_expense_by_id(expense_id)
-    if not expense_to_update:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
+    expense_to_update = get_object_or_404(expense_repository.get_expense_by_id(expense_id), "Expense Not Found")
     
     validate_active_month(expense_to_update.created_at)
 
@@ -67,9 +65,7 @@ def update_expense(expense_id: int, expense_data: dict, db: Session) -> ExpenseR
 def delete_expense(expense_id: int, db: Session) -> ExpenseResponse:
     expense_repository = ExpenseRepository(db)
 
-    expense_to_delete = expense_repository.get_expense_by_id(expense_id)
-    if not expense_to_delete:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
+    expense_to_delete = get_object_or_404(expense_repository.get_expense_by_id(expense_id), "Expense Not Found")
     
     validate_active_month(expense_to_delete.created_at)
 
@@ -88,17 +84,13 @@ def delete_expense(expense_id: int, db: Session) -> ExpenseResponse:
 
 def get_expense_by_id(expense_id: int, db: Session) -> ExpenseResponse:
     expense_repository = ExpenseRepository(db)
-    expense = expense_repository.get_expense_by_id(expense_id)
-    if not expense:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found")
+    expense = get_object_or_404(expense_repository.get_expense_by_id(expense_id), "Expense Not Found")
     return expense
 
 
 def get_user_expenses(user_id: int, db: Session) -> list[ExpenseResponse]:
     expense_repository = ExpenseRepository(db)
-    expenses = expense_repository.get_user_expenses(user_id)
-    if not expenses:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No expenses found")
+    expenses = get_list_or_404(expense_repository.get_user_expenses(user_id), "No Expenses Found")
     return expenses
 
 
@@ -106,17 +98,14 @@ def get_user_active_expenses(user_id: int, db: Session) -> list[ExpenseResponse]
     expense_repository = ExpenseRepository(db)
     current_month = datetime.now().month
     current_year = datetime.now().year
-    expenses = expense_repository.get_user_active_expenses(user_id, current_month, current_year)
-    if not expenses:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active expenses found")
+
+    expenses = get_list_or_404(expense_repository.get_user_active_expenses(user_id, current_month, current_year), "No Active Expenses Found")
     return expenses
 
 
 def get_user_expenses_by_category(user_id: int, category_id: int, db: Session) -> list[ExpenseResponse]:
     expense_repository = ExpenseRepository(db)
-    expenses = expense_repository.get_user_expenses_by_category(user_id, category_id)
-    if not expenses:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No expenses found")
+    expenses = get_list_or_404(expense_repository.get_user_expenses_by_category(user_id, category_id), "No Expenses Found")
     return expenses
 
 
@@ -124,7 +113,6 @@ def get_user_active_expenses_by_category(user_id: int, category_id: int, db: Ses
     expense_repository = ExpenseRepository(db)
     current_month = datetime.now().month
     current_year = datetime.now().year
-    expenses = expense_repository.get_user_active_expenses_by_category(user_id, category_id, current_month, current_year)
-    if not expenses:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No active expenses found")
+
+    expenses = get_list_or_404(expense_repository.get_user_active_expenses_by_category(user_id, category_id, current_month, current_year), "No Active Expenses Found")
     return expenses

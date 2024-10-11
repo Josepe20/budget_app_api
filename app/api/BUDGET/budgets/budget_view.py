@@ -5,29 +5,23 @@ from app.api.BUDGET.budgets.budget_repository import BudgetRepository
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
 from app.common.functions.validate_active_month import validate_active_month
+from app.common.functions.get_obj_or_404 import get_object_or_404, get_list_or_404
 
 
 def get_all_budgets(db: Session) -> list[BudgetResponse]:
-    budget_repository = BudgetRepository(db)
-    return budget_repository.get_all()
+    budget_repository = BudgetRepository(db)  
+    return get_object_or_404(budget_repository.get_all(), "No Budgets Found")
 
 
 def get_all_budgets_by_user(user_id: int, db: Session) -> list[BudgetResponse]:
     budget_repository = BudgetRepository(db)
-
-    if len(budget_repository.get_all_by_user_id(user_id)) < 1:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budgets not found")
-
-    return budget_repository.get_all_by_user_id(user_id)
+    budgets = get_list_or_404(budget_repository.get_all_by_user_id(user_id), "No Budgets Found")
+    return budgets
 
 
 def get_budget_by_id(budget_id: int, db: Session) -> BudgetResponse:
     budget_repository = BudgetRepository(db)
-
-    budget = budget_repository.get_budget_by_id(budget_id)
-    if not budget:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found")
-    
+    budget = get_object_or_404(budget_repository.get_budget_by_id(budget_id), "Budget Not Found")
     return budget
 
 
@@ -56,9 +50,7 @@ def create_budget(budget: BudgetCreate, db: Session):
 def update_budget_totals(budget_id: int, type: str, operation: str, amount: float, db: Session) -> BudgetResponse:
     budget_repository = BudgetRepository(db)
 
-    budget = budget_repository.get_budget_by_id(budget_id)
-    if not budget:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found")
+    budget = get_object_or_404(budget_repository.get_budget_by_id(budget_id), "Budget Not Found")
 
     # Determine whether we are going to add or restart according to the type of operation
     if type == "income":

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.api.AUTH.users.users_schema import UserCreate, UserResponse, LoginResponse, TokenBase
 from app.api.AUTH.users.users_repository import UserRepository
 from app.api.AUTH.users import user_model as user_models
+from app.common.functions.get_obj_or_404 import get_object_or_404, get_list_or_404
 from app.dependencies import get_db_session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -112,9 +113,8 @@ def refresh_token(refresh_token: str, db: Session = Depends(get_db_session)) -> 
 def activate_account(user_id: int, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
-    user = user_repository.get_user_by_id(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    user = get_object_or_404(user_repository.get_user_by_id(user_id), "User Not Found")
+
     user.is_verified = True
     user_repository.update_user(user)
     return user
@@ -123,29 +123,21 @@ def activate_account(user_id: int, db: Session = Depends(get_db_session)) -> Use
 def get_user_by_id(user_id: int, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
-    user = user_repository.get_user_by_id(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
+    user = get_object_or_404(user_repository.get_user_by_id(user_id), "User Not Found")   
     return user  
 
 
 def get_user_by_email(user_email: str, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
-    user = user_repository.get_user_by_email(user_email)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
+    user = get_object_or_404(user_repository.get_user_by_email(user_email), "User Not Found")   
     return user  
 
 
 def update_user_email_by_id(user_id: int, new_email:str, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
-    user = user_repository.get_user_by_id(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    user = get_object_or_404(user_repository.get_user_by_id(user_id), "User Not Found")
     user.email = new_email
     user_repository.update_user(user)
     
@@ -155,9 +147,7 @@ def update_user_email_by_id(user_id: int, new_email:str, db: Session = Depends(g
 def update_user_password_by_id(user_id: int, new_password: str, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
-    user = user_repository.get_user_by_id(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    user =  get_object_or_404(user_repository.get_user_by_id(user_id), "User Not Found")
     
     hashed_password = get_password_hash(new_password)
     user.password = hashed_password
@@ -169,10 +159,8 @@ def update_user_password_by_id(user_id: int, new_password: str, db: Session = De
 def delete_user_by_id(user_id: int, db: Session = Depends(get_db_session)) -> UserResponse:
     user_repository = UserRepository(db)
 
-    user_to_delete = user_repository.get_user_by_id(user_id)
-    if not user_to_delete:
-        raise HTTPException(status_code=404, detail="User not found")
+    user_to_delete = get_object_or_404(user_repository.get_user_by_id(user_id), "User Not Found")
     
-    deleted_user = user_repository.deleted_user(user_id)
+    deleted_user = user_repository.deleted_user(user_to_delete.user_id)
     return deleted_user
 
