@@ -47,7 +47,7 @@ def create_budget(budget: BudgetCreate, db: Session):
     return created_budget, True
 
 
-def update_budget_totals(budget_id: int, type: str, operation: str, amount: float, db: Session) -> BudgetResponse:
+def update_budget_totals(budget_id: int, type: str, operation: str, amount: float, db: Session):
     budget_repository = BudgetRepository(db)
 
     budget = get_object_or_404(budget_repository.get_budget_by_id(budget_id), "Budget Not Found")
