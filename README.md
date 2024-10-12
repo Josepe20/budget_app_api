@@ -88,6 +88,68 @@ DB CREDENTIALS
     PORT_DB=your_port
     DATABASE_NAME=your_db_name
 
+## Repository Architecture Based on Screaming Architecture.
+
+In this project, the architecture is designed with a modular and layered approach, inspired by **Screaming Architecture**. This is not common in FastAPI projects, which makes this design stand out by focusing on a clear separation of concerns and domain-driven design.
+
+![Repository Architecture](./assets/budget_api_architecture.jpg)
+
+### Layer 1: Root Level Structure
+
+At the top level, the project is organized into essential directories and files that define the overall setup and tooling:
+
+- `app/`: The main application logic and core functionalities.
+- `alembic/`: Database migrations and versioning, handled by Alembic.
+- `tests/`: Unit tests and integration tests for the application.
+- `bin/`: Contains shell scripts like `entrypoint.sh` for Docker container orchestration.
+- `docker-compose.yml`: Configuration for orchestrating services such as the database and the app.
+- `Dockerfile`: Docker image configuration for running the FastAPI app.
+- `.env`: Environment variables for configuring the application.
+- `alembic.ini`: Configuration for Alembic migrations.
+- `README.md`: Project documentation.
+- `requirements.txt`: Python dependencies for the application.
+- `venv/`: Virtual environment for Python dependencies (not always included in the repository).
+
+### Layer 2: Application Layer (Inside `app/`)
+
+The `app/` directory is where the core application logic lives:
+
+- `main.py`: The main entry point for the FastAPI application.
+- `database.py`: Handles database configuration and connections.
+- `dependencies.py`: Contains shared dependencies injected into various parts of the application.
+- `api/`: Houses the routers and endpoints for the application's modules.
+- `common/`: Contains shared utility functions, schemas, and constants across the app.
+- `middleware/`: Custom middlewares for handling requests, such as CORS, authentication, or logging.
+
+### Layer 3: API Layer (Inside `api/`)
+
+The `api/` directory defines individual modules of the application, each representing a core domain:
+
+- `AUTH/`: Module for handling authentication and user management.
+- `BUDGET/`: The module that handles all functionalities related to budgeting.
+- `index_router.py`: The main router that connects all module routers to the FastAPI app.
+
+### Layer 4: Domain Layer (Inside `BUDGET/`)
+
+The `BUDGET/` module consists of submodules representing distinct features of the budgeting system:
+
+- `incomes/`: Handles incomes management within a budget.
+- `expenses/`: Manages expenses within a budget.
+- `budgets/`: Contains logic to manage the overall budget.
+- `budget_index.py`: Module-level router that connects all submodules' routers to the main `BUDGET/` module.
+
+### Layer 5: Submodule Layer (Inside `incomes/`)
+
+Each submodule (e.g., `incomes/`) contains its specific logic, broken down into further components:
+
+- `income_model.py`: Defines the SQLAlchemy model for `Income`.
+- `income_schema.py`: Pydantic schemas used for validation and serialization of `Income`.
+- `income_router.py`: FastAPI router defining the endpoints related to `Income`.
+- `income_view.py`: Contains business logic for handling income-related operations. This layer is equivalent to controllers or services in other frameworks like NestJS.
+- `income_repository.py`: Implements the repository pattern, isolating data access logic for `Income`. It could evolve into a **CQRS (Command Query Responsibility Segregation)** pattern if needed in the future to handle more complex queries and commands.
+
+This modular and layered architecture ensures scalability, maintainability, and testability, allowing each module and submodule to evolve independently while keeping a clear separation of concerns.
+
     
 
 
