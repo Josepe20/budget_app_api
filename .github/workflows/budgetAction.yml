@@ -51,6 +51,8 @@ jobs:
         export EMAIL_FROM="${{ secrets.EMAIL_FROM }}"
         export EMAIL_SUBJECT="${{ secrets.EMAIL_SUBJECT }}"
 
+        pytest tests
+
         
 
 
