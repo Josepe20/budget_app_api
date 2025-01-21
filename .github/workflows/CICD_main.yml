@@ -1,0 +1,52 @@
+name: CI - Run Tests
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      run: |
+        source venv/bin/activate
+
+        export USERNAME_DB="${{ secrets.USERNAME_DB }}"
+        export PASSWORD_DB="${{ secrets.PASSWORD_DB }}"
+        export HOST_DB="${{ secrets.HOST_DB }}"
+        export PORT_DB="${{ secrets.PORT_DB }}"
+        export DATABASE_NAME="${{ secrets.DATABASE_NAME }}"
+
+        export SECRET_KEY="${{ secrets.SECRET_KEY }}"
+        export ALGORITHM="${{ secrets.ALGORITHM }}"
+        export ACCESS_TOKEN_EXPIRE_MINUTES="${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}"
+
+        export SMTP_SERVER="${{ secrets.SMTP_SERVER }}"
+        export SMTP_PORT="${{ secrets.SMTP_PORT }}"
+        export SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"
+        export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+        export EMAIL_FROM="${{ secrets.EMAIL_FROM }}"
+        export EMAIL_SUBJECT="${{ secrets.EMAIL_SUBJECT }}"
+
+        pytest tests
