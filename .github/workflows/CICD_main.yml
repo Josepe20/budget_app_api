@@ -50,3 +50,51 @@ jobs:
         export EMAIL_SUBJECT="${{ secrets.EMAIL_SUBJECT }}"
 
         pytest tests
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test  # Este job se ejecutará solo si el job 'test' pasa correctamente.
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Package FastAPI app for Lambda
+      run: |
+        mkdir package
+        pip install -r requirements.txt --target ./package
+        cp -r app package/
+        cp lambda_function.py package/
+        cp -r .env package/  # Si necesitas variables de entorno
+        cd package
+        zip -r ../deployment_package.zip .
+        cd ..
+
+    - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: Upload to S3
+      run: aws s3 cp deployment_package.zip s3://${{ secrets.AWS_S3_BUCKET }}/deployment_package.zip
+
+    #- name: Deploy to Lambda
+    #  run: |
+    #    aws lambda update-function-code \
+    #      --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+    #      --s3-bucket ${{ secrets.AWS_S3_BUCKET }} \
+    #      --s3-key deployment_package.zip
