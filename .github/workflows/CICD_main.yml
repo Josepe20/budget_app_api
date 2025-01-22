@@ -1,0 +1,100 @@
+name: CICD - Test & Deploy 
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      run: |
+        source venv/bin/activate
+
+        export USERNAME_DB="${{ secrets.USERNAME_DB }}"
+        export PASSWORD_DB="${{ secrets.PASSWORD_DB }}"
+        export HOST_DB="${{ secrets.HOST_DB }}"
+        export PORT_DB="${{ secrets.PORT_DB }}"
+        export DATABASE_NAME="${{ secrets.DATABASE_NAME }}"
+
+        export SECRET_KEY="${{ secrets.SECRET_KEY }}"
+        export ALGORITHM="${{ secrets.ALGORITHM }}"
+        export ACCESS_TOKEN_EXPIRE_MINUTES="${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}"
+
+        export SMTP_SERVER="${{ secrets.SMTP_SERVER }}"
+        export SMTP_PORT="${{ secrets.SMTP_PORT }}"
+        export SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"
+        export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+        export EMAIL_FROM="${{ secrets.EMAIL_FROM }}"
+        export EMAIL_SUBJECT="${{ secrets.EMAIL_SUBJECT }}"
+
+        pytest tests
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test  # Este job se ejecutará solo si el job 'test' pasa correctamente.
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Package FastAPI app for Lambda
+      run: |
+        mkdir package
+        pip install -r requirements.txt --target ./package
+        cp -r app package/
+        cp lambda_function.py package/
+        cp -r .env package/  # Si necesitas variables de entorno
+        cd package
+        zip -r ../deployment_package.zip .
+        cd ..
+
+    - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: Upload to S3
+      run: aws s3 cp deployment_package.zip s3://${{ secrets.AWS_S3_BUCKET }}/deployment_package.zip
+
+    #- name: Deploy to Lambda
+    #  run: |
+    #    aws lambda update-function-code \
+    #      --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+    #      --s3-bucket ${{ secrets.AWS_S3_BUCKET }} \
+    #      --s3-key deployment_package.zip
